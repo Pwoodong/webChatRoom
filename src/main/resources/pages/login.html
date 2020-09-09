@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta content="" name="description"/>
+    <meta content="" name="author"/>
+    <title>登录</title>
+    <style type="text/css">
+        #connect-container {
+            float: left;
+            width: 400px
+        }
+
+        #connect-container div {
+            padding: 5px;
+        }
+
+        #console-container {
+            float: left;
+            margin-left: 15px;
+            width: 1000px;
+        }
+
+        #console {
+            border: 1px solid #CCCCCC;
+            border-right-color: #999999;
+            border-bottom-color: #999999;
+            height: 570px;
+            overflow-y: scroll;
+            padding: 5px;
+            width: 100%;
+        }
+
+        #console p {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<input type="hidden" id="baseURL" th:value="@{/}" />
+<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websockets
+    rely on Javascript being enabled. Please enable
+    Javascript and reload this page!</h2></noscript>
+<div>
+    <div id="connect-container">
+        <div>
+            昵称:<input type="text" maxlength="10" id="username" placeholder="请输入昵称" onkeyup="if(event.keyCode == 13){connect();}" /><br />
+            <textarea id="message" placeholder="请输入内容!" style="width: 350px" onkeyup="if(event.keyCode==13) {document.getElementById('echo').click();}"></textarea>
+        </div>
+        <div>
+            <button id="connect" onclick="connect();">上线</button>
+            <button id="disconnect" onclick="disconnect();">下线</button>
+            <button id="echo" onclick="echo();">发送</button>
+        </div>
+        <div id="sum" th:text="'在线人数：'+${msg}">
+        </div>
+    </div>
+    <div id="console-container">
+        <div id="console"></div>
+    </div>
+    <br />
+</div>
+</body>
+<script src="//cdn.bootcss.com/jquery/3.1.0/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/sockjs-client/1.1.1/sockjs.min.js"></script>
+<script type="text/javascript" th:inline="javascript">
+
+</script>
+</html>

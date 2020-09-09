@@ -1,0 +1,22 @@
+
+#user-container {
+    float: left;
+    width: 80%;
+}
+
+#group-container {
+    float: right;
+    width: 50%;
+}
+
+#user-list {
+    overflow:scroll;
+    width:100%;
+    height:280px;
+}
+
+#group-list {
+    overflow:scroll;
+    width:100%;
+    height:326px;
+}

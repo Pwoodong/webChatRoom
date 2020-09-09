@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta content="" name="description"/>
+    <meta content="" name="author"/>
+    <title>聊天室</title>
+    <link rel="stylesheet" type="text/css" href="static/css/chat.css">
+    <link rel="stylesheet" type="text/css" href="static/plugins/layui-v2.5.6/css/layui.css">
+    <script src="static/plugins/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+    <script src="static/plugins/layer-v3.1.1/layer.js"></script>
+    <script src="static/plugins/layui-v2.5.6/layui.all.js"></script>
+    <script src="static/js/common.js"></script>
+</head>
+<body>
+<input type="hidden" id="baseURL" th:value="@{/}"/>
+<input type="hidden" id="groupId" th:value="${groupId}"/>
+<input type="hidden" id="userId" th:value="${userId}"/>
+<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websockets
+    rely on Javascript being enabled. Please enable
+    Javascript and reload this page!</h2></noscript>
+
+<div class="layui-container">
+
+    <div class="layui-row">
+        <div class="layui-col-md9">
+            <div id="mask" class="mask"></div>
+            <div id="msg" class="msg">正在上传中，请勿退出当前页面</div>
+            <div id="console-container">
+                <div id="console">
+                    <div th:each="u : ${list}">
+                        <p th:if=" ${u.type} eq 1" th:text="${u.text}" style="overflow-wrap: break-word;"></p>
+                        <span th:if=" ${u.type} eq 2">
+		           <span th:text="${u.name}"></span>上传了文件:<a href="javascript:void(0)"
+                                                             th:onclick="|javascript : downloadFtpFile( '${ u.filePath }','${ u.text }' )|"
+                                                             th:text="${u.text}"></a>
+		       </span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="connect-container">
+                <div>
+                    昵称:<input style="width:350px" type="text" maxlength="10" id="username" placeholder="请输入昵称"
+                              th:value="${name}" onkeyup="if(event.keyCode == 13){connect();}"/>(获取系统当前登录人)<br/>
+                    <textarea id="message" placeholder="请输入内容!" style="width: 100%"
+                              onkeyup="if(event.keyCode==13) {document.getElementById('echo').click();}"></textarea>
+                </div>
+                <div>
+                    <button id="connect" onclick="connect();" style="display:none">上线</button>
+                    <button id="disconnect" onclick="disconnect();" style="display:none">下线</button>
+                    <button id="echo" onclick="echo();">发送</button>
+                    <input id="cert" type="file"/>
+                    <button id="fileupload" onclick="fileupload();">发送文件</button>
+                </div>
+
+            </div>
+
+        </div>
+        <div class="layui-col-md3">
+            <div class="layui-tab layui-tab-card">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">文件</li>
+                    <li>联系人</li>
+                    <li>群组</li>
+                </ul>
+                <div class="layui-tab-content" style="height: 520px;">
+                    <div class="layui-tab-item layui-show">
+                        <div id="file-list"></div>
+                    </div>
+                    <div class="layui-tab-item">
+                        <h5>
+                            <div id="sum" th:text="'在线人数：'+${msg}"></div>
+                        </h5>
+                        <br/>
+                        <div id="user-list"></div>
+                    </div>
+                    <div class="layui-tab-item">
+                        <button id="addChatGroup">发起群聊</button>
+                        <input type="hidden" id="userIdObject"/>
+                        <input type="hidden" id="userNameObject"/>
+                        <div id="group-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="//cdn.bootcss.com/jquery/3.1.0/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/sockjs-client/1.1.1/sockjs.min.js"></script>
+<script src="static/js/chat.js"></script>
+</body>
+
+</html>

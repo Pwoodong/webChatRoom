@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jiu.webchat.dao.SysUserDao" >
+
+    <select id="selectList" resultType="com.jiu.webchat.entity.SysUserEntity" parameterType="com.jiu.webchat.entity.SysUserEntity" >
+        SELECT
+            id,code,name,status,create_time createTime
+        FROM sys_user
+        <where>
+            name is not null
+            <if test="name != null and name  != ''">
+                and name = #{name}
+            </if>
+        </where>
+    </select>
+
+</mapper>

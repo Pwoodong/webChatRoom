@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.jiu.webchat.dao.ChatRecordLogDao" >
+
+    <resultMap id="BaseResultMap" type="com.jiu.webchat.entity.ChatRecordLogEntity" >
+        <id column="id" property="id" jdbcType="VARCHAR" />
+        <result column="type" property="type" jdbcType="VARCHAR" />
+        <result column="name" property="name" jdbcType="VARCHAR" />
+        <result column="login_name" property="loginName" jdbcType="VARCHAR" />
+        <result column="text" property="text" jdbcType="VARCHAR" />
+        <result column="group_id" property="groupId" jdbcType="VARCHAR" />
+        <result column="user_id" property="userId" jdbcType="VARCHAR" />
+        <result column="file_path" property="filePath" jdbcType="VARCHAR" />
+        <result column="district" property="district" jdbcType="VARCHAR" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, type,name, login_name, text,group_id,user_id,file_path, district,DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') create_time
+    </sql>
+
+    <select id="selectByList" resultType="com.jiu.webchat.entity.ChatRecordLogEntity" parameterType="com.jiu.webchat.entity.ChatRecordLogEntity" >
+        SELECT
+        id, type,name, login_name loginName, text,group_id groupId,user_id userId,file_path filePath, district,DATE_FORMAT(create_time,'%Y-%m-%d %H:%i:%s') createTime
+        FROM chat_record_log
+        <where>
+            1 = 1
+            <if test="type != null and type  != ''">
+                and type = #{type}
+            </if>
+            <if test="district != null and district  != ''">
+               and district = #{district}
+            </if>
+            <if test="groupId != null and groupId  != ''">
+                and group_id = #{groupId}
+            </if>
+            <if test="userId != null and userId  != ''">
+                and user_id = #{userId}
+            </if>
+        </where>
+        ORDER BY create_time desc LIMIT 0,20
+    </select>
+
+    <select id="selectListByIdS" resultType="com.jiu.webchat.entity.ChatRecordLogEntity" parameterType="java.lang.String">
+        SELECT
+        <include refid="Base_Column_List" />
+        FROM chat_record_log
+        <where>
+            1 = 1
+            <if test="ids != null and ids  != ''">
+                and id IN(${ids})
+            </if>
+        </where>
+    </select>
+
+    <insert id="insert" parameterType="com.jiu.webchat.entity.ChatRecordLogEntity" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into chat_record_log (type,name,login_name,text,create_time,file_path,district,group_id,user_id) VALUES
+        (#{type},#{name},'32',#{text},DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s'),#{filePath},#{district},#{groupId},#{userId})
+    </insert>
+
+</mapper>
