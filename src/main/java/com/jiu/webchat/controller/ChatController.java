@@ -1,17 +1,11 @@
 package com.jiu.webchat.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.alibaba.fastjson.JSON;
 import com.jiu.webchat.config.PropertiesConfig;
+import com.jiu.webchat.dto.SessionUserDto;
 import com.jiu.webchat.entity.ChatRecordLogEntity;
-import com.jiu.webchat.entity.SysUserEntity;
 import com.jiu.webchat.service.ChatRecordLogService;
-import com.jiu.webchat.service.SysUserService;
+import com.jiu.webchat.webSocket.WebSocketCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.alibaba.fastjson.JSON;
-import com.jiu.webchat.dto.SessionUserDto;
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
 
-import com.jiu.webchat.webSocket.WebSocketCache;
+import static com.jiu.webchat.config.CacheConfig.userCache;
 
 @Controller
 @RequestMapping(value = "chat")
@@ -42,42 +36,38 @@ public class ChatController {
 	@Autowired
 	private PropertiesConfig propertiesConfig;
 
-	@Autowired
-	private SysUserService sysUserService;
-
 	@RequestMapping(method = RequestMethod.GET)
 	public String chat(ModelMap map,HttpServletRequest request) {
-		String name = request.getParameter("name");
-		String groupId = request.getParameter("groupId");
-		String userId = request.getParameter("userId");
-		log.debug(name+"进入聊天室页面......");
-		map.put("msg", this.cache.getAll().size());
-		map.put("name", name);
-		List<WebSocketSession> all = this.cache.getAll();
-		List<SessionUserDto> useDtos = new ArrayList<>();
-		Boolean b = true;
-		if (all != null && all.size() > 0) {
-			for (WebSocketSession ws : all) {
-				SessionUserDto s = new SessionUserDto();
-				s.setId(ws.getId());
-				s.setUsername(this.cache.getUserName(ws.getId()));
+		try{
+			String name = request.getParameter("name");
+			String groupId = request.getParameter("groupId");
+			String userId = request.getParameter("userId");
+			log.debug(name+"进入聊天室页面......");
+			List<WebSocketSession> allList = this.cache.getGroupAll(groupId);
+			map.put("msg", allList.size());
+			map.put("name", name);
+
+			/** 判断当前聊天连接人是否已经在线 */
+			Boolean b = true;
+			for (WebSocketSession ws : allList) {
 				if(this.cache.getUserName(ws.getId()).equals(name)) {
-					b=false;
+					b = false;
 				}
-				s.setStatus("在线");
-				useDtos.add(s);
 			}
+
+			if(b) {
+				ChatRecordLogEntity chatRecordLogEntity = new ChatRecordLogEntity();
+				chatRecordLogEntity.setGroupId(groupId);
+				map.put("list", chatRecordLogService.selectByList(chatRecordLogEntity));
+				map.put("groupId", groupId);
+				map.put("userId", userId);
+				return "chat";
+			}
+			return "msg";
+		}catch (Exception e){
+			log.error("聊天室连接出现异常."+e.getMessage());
+			return "404";
 		}
-		
-		if(b) {
-			ChatRecordLogEntity chatRecordLogEntity = new ChatRecordLogEntity();
-			chatRecordLogEntity.setGroupId(groupId);
-			map.put("list", chatRecordLogService.selectByList(chatRecordLogEntity));
-			map.put("groupId", groupId);
-			map.put("userId", userId);
-			return "chat";
-		}
-		return "404";
 	}
 
 	/**
@@ -89,24 +79,20 @@ public class ChatController {
 	@RequestMapping(value = "/getSum", method = RequestMethod.POST)
 	public String getSum(@RequestParam("groupId") String groupId) {
 		List<WebSocketSession> all = this.cache.getGroupAll(groupId);
-		int size = all.size();
-		List<SessionUserDto> useDtos = new ArrayList<>();
-		if (all != null && all.size() > 0) {
-			for (WebSocketSession ws : all) {
-				SessionUserDto s = new SessionUserDto();
-				s.setId(ws.getId());
-				s.setUsername(this.cache.getUserName(ws.getId()));
-				s.setStatus("在线");
-				useDtos.add(s);
-			}
+		List<SessionUserDto> useDtoList = new ArrayList<>();
+		for (WebSocketSession ws : all) {
+			SessionUserDto s = new SessionUserDto();
+			s.setId(ws.getId());
+			s.setUsername(this.cache.getUserName(ws.getId()));
+			s.setStatus("在线");
+			useDtoList.add(s);
 		}
-		/** 查询所有的账号存入列表 事实查询对数据库压力太大 要做初始化 */
-		SysUserEntity sysUserEntity = new SysUserEntity();
-		List<SessionUserDto> haveCount = sysUserService.selectSessionUserList(sysUserEntity);
-		useDtos.addAll(haveCount);
+		/** 获取缓存的所有用户信息 */
+		Collections.reverse(userCache);
+		useDtoList.addAll(userCache);
 		Map<String, Object> rt = new HashMap<>(2);
-		rt.put("size", size);
-		rt.put("userList", ChatController.removeDuplicate(useDtos));
+		rt.put("size", all.size());
+		rt.put("userList", ChatController.removeDuplicate(useDtoList));
 		return JSON.toJSONString(rt);
 	}
 
