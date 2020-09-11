@@ -28,12 +28,11 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             ServletServerHttpRequest servletRequest = (ServletServerHttpRequest) request;
             HttpSession session = servletRequest.getServletRequest().getSession();
             log.error("开始拦截处理【" + session + "】");
-            if (groupId != null) {
-                session.setAttribute("USER_GROUP", groupId);
-                attributes.put("USER_GROUP", groupId);
-            }
-
             if (session != null) {
+                if (groupId != null) {
+                    session.setAttribute("USER_GROUP", groupId);
+                    attributes.put("USER_GROUP", groupId);
+                }
                 session.setAttribute("USER_ID", userId);
                 session.setAttribute("USER_NAME", userName);
                 attributes.put("USER_ID", userId);

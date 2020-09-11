@@ -21,12 +21,12 @@ public class WebSocketConfig extends WebMvcConfigurerAdapter implements WebSocke
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         /** 提供符合W3C标准的Websocket数据 */
         registry.addHandler(echoWebSocketHandler(), "/echo");
-        registry.addHandler(snakeWebSocketHandler(), "/snake");
-        registry.addHandler(snakeWebSocketHandler(), "/websocket");
+        //registry.addHandler(snakeWebSocketHandler(), "/snake");
+        //registry.addHandler(snakeWebSocketHandler(), "/websocket");
         /** 提供符合SockJS的数据 */
         registry.addHandler(echoWebSocketHandler(), "/sockjs/echo").addInterceptors(handshakeInterceptor()).withSockJS();
-        registry.addHandler(snakeWebSocketHandler(), "/sockjs/snake").addInterceptors(handshakeInterceptor()).withSockJS();
-        registry.addHandler(snakeWebSocketHandler(), "/sockjs/websocket").addInterceptors(handshakeInterceptor()).withSockJS();
+        //registry.addHandler(snakeWebSocketHandler(), "/sockjs/snake").addInterceptors(handshakeInterceptor()).withSockJS();
+        //registry.addHandler(snakeWebSocketHandler(), "/sockjs/websocket").addInterceptors(handshakeInterceptor()).withSockJS();
     }
 
     @Bean
