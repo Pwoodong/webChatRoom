@@ -36,6 +36,9 @@
 				</property>
 			</bean>
 		</mvc:message-converters>
+
+		<mvc:async-support default-timeout="3000"/>
+
 	</mvc:annotation-driven>
 
 	<bean id="contentNegotiationManager"

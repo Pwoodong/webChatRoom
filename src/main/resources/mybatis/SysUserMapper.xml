@@ -14,4 +14,17 @@
         </where>
     </select>
 
+    <select id="selectUserList" resultType="com.huak.webChat.entity.SysEmployeeEntity" parameterType="com.huak.webChat.entity.ChatGroupEntity">
+        SELECT
+            t.id,t.code,t.name,t.status,t.create_time createTime
+        FROM
+            sys_user t left join chat_group_user_rel g on g.user_id = t.id
+        <where>
+            t.NAME IS NOT NULL
+            <if test="id != null and id  != ''">
+                and g.group_id = #{id}
+            </if>
+        </where>
+    </select>
+
 </mapper>

@@ -1,5 +1,6 @@
 package com.jiu.webchat.dao;
 
+import com.jiu.webchat.entity.ChatGroupEntity;
 import com.jiu.webchat.entity.SysUserEntity;
 import org.springframework.stereotype.Component;
 
@@ -23,5 +24,12 @@ public interface SysUserDao {
      * @return      List
      **/
     List<SysUserEntity> selectList(SysUserEntity sysUserEntity);
+
+    /**
+     * 查询列表
+     * @param       chatGroupEntity       入参
+     * @return      List
+     **/
+    List<SysUserEntity> selectUserList(ChatGroupEntity chatGroupEntity);
 
 }

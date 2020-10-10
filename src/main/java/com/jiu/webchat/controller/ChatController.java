@@ -3,8 +3,11 @@ package com.jiu.webchat.controller;
 import com.alibaba.fastjson.JSON;
 import com.jiu.webchat.config.PropertiesConfig;
 import com.jiu.webchat.dto.SessionUserDto;
+import com.jiu.webchat.entity.ChatGroupEntity;
 import com.jiu.webchat.entity.ChatRecordLogEntity;
+import com.jiu.webchat.entity.SysUserEntity;
 import com.jiu.webchat.service.ChatRecordLogService;
+import com.jiu.webchat.service.SysUserService;
 import com.jiu.webchat.webSocket.WebSocketCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +35,9 @@ public class ChatController {
 
 	@Autowired
 	private ChatRecordLogService chatRecordLogService;
+
+	@Autowired
+	private SysUserService sysUserService;
 
 	@Autowired
 	private PropertiesConfig propertiesConfig;
@@ -88,6 +94,16 @@ public class ChatController {
 			useDtoList.add(s);
 		}
 		/** 获取缓存的所有用户信息 */
+		ChatGroupEntity chatGroupEntity = new ChatGroupEntity();
+		chatGroupEntity.setId(Integer.parseInt(groupId));
+		List<SysUserEntity> userList = sysUserService.selectUserList(chatGroupEntity);
+		for (SysUserEntity entity : userList) {
+			SessionUserDto userDto = new SessionUserDto();
+			userDto.setId(entity.getId().toString());
+			userDto.setUsername(entity.getName());
+			userDto.setStatus("离线");
+			useDtoList.add(userDto);
+		}
 		Collections.reverse(userCache);
 		useDtoList.addAll(userCache);
 		Map<String, Object> rt = new HashMap<>(2);
@@ -147,9 +163,10 @@ public class ChatController {
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/getFile", method = RequestMethod.GET)
-	public String getFile() {
+	@RequestMapping(value = "/getFile", method = RequestMethod.POST)
+	public String getFile(@RequestParam("groupId") String groupId) {
 		ChatRecordLogEntity chatRecordLogEntity = new ChatRecordLogEntity();
+		chatRecordLogEntity.setGroupId(groupId);
 		chatRecordLogEntity.setType("2");
 		List<ChatRecordLogEntity> haveCount = chatRecordLogService.selectByList(chatRecordLogEntity);
 		Map<String, Object> rt = new HashMap<>(1);

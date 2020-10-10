@@ -2,6 +2,7 @@ package com.jiu.webchat.service.impl;
 
 import com.jiu.webchat.dao.SysUserDao;
 import com.jiu.webchat.dto.SessionUserDto;
+import com.jiu.webchat.entity.ChatGroupEntity;
 import com.jiu.webchat.entity.SysUserEntity;
 import com.jiu.webchat.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,11 @@ public class SysUserServiceImpl implements SysUserService {
         }
         Collections.reverse(list);
         return list;
+    }
+
+    @Override
+    public List<SysUserEntity> selectUserList(ChatGroupEntity chatGroupEntity) {
+        return sysUserDao.selectUserList(chatGroupEntity);
     }
 
 }

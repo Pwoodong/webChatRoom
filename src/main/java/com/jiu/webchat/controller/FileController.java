@@ -65,16 +65,18 @@ public class FileController {
 
     @RequestMapping(value = "downloadFtpFile")
     public void downloadFtpFile(@RequestParam("localPath") String localPath, @RequestParam("originalName") String originalName, HttpServletResponse response) {
-        FTPClient ftpClient = null;
         try {
-            ftpClient = FileUpload.getFTPClient();
+            FTPClient ftpClient = FileUpload.getFTPClient();
             ftpClient.setControlEncoding("UTF-8");
             ftpClient.setFileType(FTPClient.BINARY_FILE_TYPE);
             ftpClient.enterLocalPassiveMode();
-            ftpClient.changeWorkingDirectory(propertiesConfig.getFtpUrl() + "/" + localPath.substring(0, 8));
+            boolean result = ftpClient.changeWorkingDirectory( "/" + localPath.substring(0, 8));
+            logger.debug("切换目录后当前目录【"+result+","+ftpClient.printWorkingDirectory()+"】");
             OutputStream out = response.getOutputStream();
-            String filename = localPath.substring(9);
+            String filename =  localPath.substring(9,localPath.length());
+            logger.debug("文件下载文件名称【"+filename+"】");
             InputStream is = ftpClient.retrieveFileStream(filename);
+            logger.debug("FTP返回码【"+ftpClient.getReplyCode()+"】");
             if (is == null || ftpClient.getReplyCode() == FTPReply.FILE_UNAVAILABLE) {
                 logger.error("ftpClient连接文件流不存在 ");
             }

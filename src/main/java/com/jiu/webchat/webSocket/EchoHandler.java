@@ -98,7 +98,11 @@ public class EchoHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         log.debug("关闭链接");
-        this.closeAndNotice(session);
+        try{
+            this.closeAndNotice(session);
+        }catch (Exception e){
+            log.error("关闭连接出现异常."+e.getMessage());
+        }
     }
 
 
@@ -115,7 +119,11 @@ public class EchoHandler extends TextWebSocketHandler {
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
         log.error("handleTransportError:", exception);
-        this.closeAndNotice(session);
+        try{
+            this.closeAndNotice(session);
+        }catch (Exception e){
+            log.error("handleTransportError 出现异常."+e.getMessage());
+        }
     }
 
     /**
@@ -147,19 +155,21 @@ public class EchoHandler extends TextWebSocketHandler {
         String name = this.cache.getUserName(session.getId());
         this.cache.deleteCache(session.getId());
         this.timeLimitMap.remove(session.getId());
-        if (null != name && !"".equals(name)) {
-            if (session.isOpen()) {
-                session.sendMessage(new TextMessage(name + "下线啦!"));
-            }
+        if (StringUtils.isNotEmpty(name)) {
             String groupId = (String) session.getAttributes().get("USER_GROUP");
-            this.cache.getGroupAll(groupId).forEach(s -> {
-                try {
-                    String now = DateUtils.date2String(new Date());
-                    s.sendMessage(new TextMessage(now + " " + name + "下线啦!"));
-                } catch (IOException e) {
-                    log.error("异常", e);
-                }
-            });
+            if(StringUtils.isNotEmpty(groupId)){
+                this.cache.getGroupAll(groupId).forEach(s -> {
+                    try {
+                        String now = DateUtils.date2String(new Date());
+                        s.sendMessage(new TextMessage(now + " " + name + "下线啦!"));
+                    } catch (IOException e) {
+                        log.error("异常", e);
+                    }
+                });
+            }
+            if (session.isOpen()) {
+                session.close();
+            }
         }
     }
 

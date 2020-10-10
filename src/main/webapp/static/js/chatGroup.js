@@ -222,9 +222,11 @@ function downloadFtpFile(localPath, originalName) {
 }
 
 function getFile() {
+    var groupId = document.getElementById('groupId').value;
     $.ajax({
         url: webProjectName() + "/chat/getFile",
-        type: 'get',
+        type: 'post',
+        data:{groupId:groupId},
         success: function (data, status) {
             var obj = eval("(" + data + ")");
             console.log(obj.list);

@@ -1,9 +1,12 @@
 package com.jiu.webchat.utils;
 
 import com.jiu.webchat.config.PropertiesConfig;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -21,6 +24,8 @@ import java.util.Map;
  */
 public class FileUpload {
 
+    private static final Logger logger = LoggerFactory.getLogger(FileUpload.class);
+
     private static String ftpIP;
     private static int ftpPost;
     private static String ftpUser;
@@ -29,13 +34,13 @@ public class FileUpload {
     private static String ftpStart;
     private static String ftpBrowse;
 
-    public static void setFileUpload(PropertiesConfig propertiesConfig) {
+    public static void setFileUpload(PropertiesConfig propertiesConfig){
         ftpIP = propertiesConfig.getFtpIP();
         ftpPost = propertiesConfig.getFtpPost();
         ftpUser = propertiesConfig.getFtpUser();
         ftpPwd = propertiesConfig.getFtpPassword();
         ftpUrl = propertiesConfig.getFtpUrl();
-        ftpStart = propertiesConfig.getFtpStart();
+        ftpStart =  propertiesConfig.getFtpStart();
         ftpBrowse = propertiesConfig.getFtpBrowse();
     }
 
@@ -55,9 +60,11 @@ public class FileUpload {
             copyFile(file.getInputStream(), filePath, fileName + extName, file).replaceAll("-", "");
             String remoteFilePath = ftpUrl + "/" + filePath + "/" + fileName + extName;
             // 然后上传服务器
+            logger.debug("文件上传远程路径【"+remoteFilePath+"】");
             upload(filePath + "/" + fileName + extName, remoteFilePath, file);
             return fileName + extName;
         } catch (Exception e) {
+            logger.debug("附件上传出现异常。"+e.getMessage());
             return null;
         }
     }
@@ -76,7 +83,8 @@ public class FileUpload {
                 file.getParentFile().mkdirs();
             }
         }
-        oldfile.transferTo(file);
+        //oldfile.transferTo(file);
+        FileUtils.copyInputStreamToFile(in, file);
         return realName;
     }
 
@@ -150,15 +158,15 @@ public class FileUpload {
             String remoteFileName = remote.substring(remote.lastIndexOf("/") + 1);
             ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
             if (ftpClient.storeFile(remoteFileName, is)) {
-                /*写入成功保存文件路径*/
+                logger.info("附件上传成功.");
             } else {
-                /*寫入失敗*/
+                logger.info("附件上传失败.");
             }
             if (ftpClient.isConnected()) {
                 ftpClient.disconnect();
             }
         } catch (Exception e) {
-
+            logger.error("附件上传出现错误。"+e.getMessage());
         } finally {
             is.close();
             ftpClient.disconnect();
@@ -256,12 +264,13 @@ public class FileUpload {
     }
 
     public static Map<String, String> uploadFile(MultipartFile uploadFile) {
-        Map<String, String> resultmMap = new HashMap<String, String>();
+        Map<String, String> resultMap = new HashMap<>(3);
         // 生成一个文件名
         // 获取旧的名字
         String oldName = uploadFile.getOriginalFilename();
         // 新名字
         String newName = UUIDGenerator.getUUID();
+        logger.debug("上传附件新名字【"+newName+"】");
         String filePath = new SimpleDateFormat("yyyyMMdd").format(new Date());
         // 端口号
         try {
@@ -269,15 +278,17 @@ public class FileUpload {
                 //文件上传路径
                 newName = fileUp(uploadFile, filePath, newName);
             }
-            resultmMap.put("resultCode", "1");
-            resultmMap.put("resultFilePath", filePath + "/" + newName);
-            resultmMap.put("resultMessageOldname", oldName);
-            return resultmMap;
+            resultMap.put("resultCode", "1");
+            resultMap.put("resultFilePath", filePath + "/" + newName);
+            resultMap.put("resultMessageOldname", oldName);
+            logger.debug("上传附件返回值【"+resultMap+"】");
+            return resultMap;
         } catch (Exception e) {
-            resultmMap.put("resultCode", "0");
-            resultmMap.put("resultFilePath", filePath + "/" + newName);
-            resultmMap.put("resultMessageOldname", oldName);
-            return resultmMap;
+            resultMap.put("resultCode", "0");
+            resultMap.put("resultFilePath", filePath + "/" + newName);
+            resultMap.put("resultMessageOldname", oldName);
+            logger.debug("上传附件返回值【"+resultMap+"】");
+            return resultMap;
         }
     }
 
@@ -295,13 +306,16 @@ public class FileUpload {
             ftpClient.connect(ftpIP, ftpPost);
             // 登陆FTP服务器
             ftpClient.login(ftpUser, ftpPwd);
+            logger.debug("FTP服务器登录返回信息【"+ftpClient.getReplyCode()+"】");
             if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
                 ftpClient.disconnect();
-            } else {
+                logger.info("FTP已断开连接.");
             }
         } catch (SocketException e) {
+            logger.error("FTP登录出现异常."+e.getMessage());
             e.printStackTrace();
         } catch (IOException e) {
+            logger.error("FTP登录出现异常."+e.getMessage());
             e.printStackTrace();
         }
         return ftpClient;
